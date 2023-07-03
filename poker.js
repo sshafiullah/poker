@@ -17,67 +17,69 @@ const HandRank = {
 }
 
 const Cards = {
-  S1: 'Ace of Spades',
-  S2: 'Two fo Spades',
-  S3: 'Three of Spades',
-  S4: 'Four of Spades',
-  S5: 'Five of Spades',
-  S6: 'Six of Spades',
-  S7: 'Seven of Spades',
-  S8: 'Eight of Spades',
-  S9: 'Nine of Spades',
-  S10: 'Ten of Spades',
-  S11: 'Jack of Spades',
-  S12: 'Queen of Spades',
-  S13: 'King of Spades',
-  C1: 'Ace of Clubs',
-  C2: 'Two fo Clubs',
-  C3: 'Three of Clubs',
-  C4: 'Four of Clubs',
-  C5: 'Five of Clubs',
-  C6: 'Six of Clubs',
-  C7: 'Seven of Clubs',
-  C8: 'Eight of Clubs',
-  C9: 'Nine of Clubs',
-  C10: 'Ten of Clubs',
-  C11: 'Jack of Clubs',
-  C12: 'Queen of Clubs',
-  C13: 'King of Clubs',
-  H1: 'Ace of Hearts',
-  H2: 'Two fo Hearts',
-  H3: 'Three of Hearts',
-  H4: 'Four of Hearts',
-  H5: 'Five of Hearts',
-  H6: 'Six of Hearts',
-  H7: 'Seven of Hearts',
-  H8: 'Eight of Hearts',
-  H9: 'Nine of Hearts',
-  H10: 'Ten of Hearts',
-  H11: 'Jack of Hearts',
-  H12: 'Queen of Hearts',
-  H13: 'King of Hearts',
-  D1: 'Ace of Diamonds',
-  D2: 'Two fo Diamonds',
-  D3: 'Three of Diamonds',
-  D4: 'Four of Diamonds',
-  D5: 'Five of Diamonds',
-  D6: 'Six of Diamonds',
-  D7: 'Seven of Diamonds',
-  D8: 'Eight of Diamonds',
-  D9: 'Nine of Diamonds',
-  D10: 'Ten of Diamonds',
-  D11: 'Jack of Diamonds',
-  D12: 'Queen of Diamonds',
-  D13: 'King of Diamonds',
+  S1: 14,
+  S2: 2,
+  S3: 3,
+  S4: 4,
+  S5: 5,
+  S6: 6,
+  S7: 7,
+  S8: 8,
+  S9: 9,
+  S10: 10,
+  S11: 11,
+  S12: 12,
+  S13: 13,
+  C1: 14,
+  C2: 2,
+  C3: 3,
+  C4: 4,
+  C5: 5,
+  C6: 6,
+  C7: 7,
+  C8: 8,
+  C9: 9,
+  C10: 10,
+  C11: 11,
+  C12: 12,
+  C13: 13,
+  H1: 14,
+  H2: 2,
+  H3: 3,
+  H4: 4,
+  H5: 5,
+  H6: 6,
+  H7: 7,
+  H8: 8,
+  H9: 9,
+  H10: 10,
+  H11: 11,
+  H12: 12,
+  H13: 13,
+  D1: 14,
+  D2: 2,
+  D3: 3,
+  D4: 4,
+  D5: 5,
+  D6: 6,
+  D7: 7,
+  D8: 8,
+  D9: 9,
+  D10: 10,
+  D11: 11,
+  D12: 12,
+  D13: 13,
 }
 
+// Check if card names for hands are valid
 function validateCard(card){
   if (Object.keys(Cards).includes(card)) {
-    return true
+    return true;
   }
-  return false
+  return false;
 }
 
+// Check if there are duplicate cards being used in either hand
 function checkDuplicates(hands){
   const encounteredValues = {};
   let hasDuplicates = false;
@@ -94,11 +96,41 @@ function checkDuplicates(hands){
   }
   
   if (hasDuplicates){
-    return true
+    return true;
   }
 
-  return false
+  return false;
 }
+
+// Get the rank of a hand
+function getRank(hand){
+  card1 = Cards[hand[0]];
+  card2 = Cards[hand[1]];
+  card3 = Cards[hand[2]];
+  card4 = Cards[hand[3]];
+  card5 = Cards[hand[4]];
+
+  cards = [card1,card2,card3,card4,card5];
+  cards.sort(function(a, b){return a-b});
+  if(isStraight(cards)){
+    console.log("The hand is straight")
+  }
+  else {
+    console.log("The hand is not straight")
+  }
+}
+
+// Check if hand is a Straight. Expects the input array to be sorted in ascending order
+function isStraight(hand){
+  const lowestRank = hand[0];
+  for (let i = 1; i < hand.length; i++) {
+    if (hand[i] !== lowestRank + i) {
+      return false;
+    }
+  }
+  return true;
+}
+
 
 
 // Set EJS as the view engine
@@ -150,6 +182,8 @@ app.post('/json', (req, res) => {
     if(checkDuplicates(combined)){
       throw new Error("There are duplicate cards being used in your deck\n")
     }
+
+    getRank(jsonData.Hand1)
 
     // Render the JSON data in an HTML template and send it to the client
   res.render('jsonTemplate', { jsonData });
