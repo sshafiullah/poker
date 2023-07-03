@@ -79,7 +79,25 @@ function validateCard(card){
 }
 
 function checkDuplicates(hands){
-  console.log("I am within the function") 
+  const encounteredValues = {};
+  let hasDuplicates = false;
+
+  for (let i = 0; i < hands.length; i++) {
+    const value = hands[i];
+
+    if (encounteredValues[value]) {
+      hasDuplicates = true;
+      break;
+    }
+
+    encounteredValues[value] = true;
+  }
+  
+  if (hasDuplicates){
+    return true
+  }
+
+  return false
 }
 
 
@@ -103,17 +121,17 @@ app.post('/json', (req, res) => {
       throw new Error('Required key "Hand1" are missing in the JSON data\n');
     }
     if (!Array.isArray(jsonData.Hand1) || !Array.isArray(jsonData.Hand2)) {
-      throw new Error('Hands key needs to be an array of dictionaries in format: {Hands: [{ hand1: { card1: card name, card2: card name... }, hand2: { card1: card name, card2: card name... }}]}\n');
+      throw new Error('Hand1 and Hand2 keys need to be arrays in format: {"Hand1": [ "H1", "H2", "C5", "D12", "D10"],"Hand2": ["H3", "H4", "C7", "D6", "S3"]}\n');
     }
     const hand  = Object.keys(jsonData)
     if (hand.length != 2) {
-      throw new Error('There needs to be exactly 2 hands\n') 
+      throw new Error('There needs to be exactly 2 hands named Hand1 and Hand2\n') 
     }
 
     const hand1 = Object.keys(jsonData.Hand1);
     const hand2 = Object.keys(jsonData.Hand2);
     if (hand1.length != 5 || hand2.length != 5) {
-      throw new Error('There needs to be exactly 5 card key values per hand named card1, card2,... card5\n') 
+      throw new Error('There needs to be exactly 5 card key values per hand.\n Each card value can be from each of the 4 suites: H = Hearts, D = Diamonds, C = clubs, S = Spades and numbered from 1-13.\n eg: "H10" - represents 10 of Hearts\n') 
     }
 
     for (let i = 0; i < jsonData.Hand1.length; i++){
@@ -128,6 +146,10 @@ app.post('/json', (req, res) => {
     }
     const combined = jsonData.Hand1.concat(jsonData.Hand2);
     console.log(combined)
+
+    if(checkDuplicates(combined)){
+      throw new Error("There are duplicate cards being used in your deck\n")
+    }
 
     // Render the JSON data in an HTML template and send it to the client
   res.render('jsonTemplate', { jsonData });
