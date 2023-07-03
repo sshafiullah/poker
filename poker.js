@@ -113,10 +113,16 @@ function getRank(hand){
   cards = [card1,card2,card3,card4,card5];
   cards.sort(function(a, b){return a-b});
   if(isStraight(cards)){
-    console.log("The hand is straight")
+    console.log("The hand is straight\n")
   }
   else {
-    console.log("The hand is not straight")
+    console.log("The hand is not straight\n")
+  }
+
+  if(isFlush(hand)){
+    console.log("The hand is Flush\n")
+  } else{
+    console.log("The hand is not Flush\n")
   }
 }
 
@@ -131,7 +137,16 @@ function isStraight(hand){
   return true;
 }
 
-
+// Checks the first letter of the card to determine suite and compares against the rest of the hand
+function isFlush(hand){
+  const suite = Array.from(hand[0])[0]
+  for (let i = 1; i < hand.length; i++) {
+    if (Array.from(hand[i])[0] != suite){
+      return false;
+    }
+  }
+  return true;
+}
 
 // Set EJS as the view engine
 app.set('view engine', 'ejs');
