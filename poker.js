@@ -4,18 +4,6 @@ const bodyParser = require('body-parser');
 const app = express();
 const port = 8080;
 
-const HandRank = {
-  HighCard: 'High Card',
-  OnePair: 'One Pair',
-  TwoPairs: 'Two Pairs',
-  ThreeOfAKind: 'Three of a Kind',
-  Straight: 'Straight',
-  Flush: 'Flush',
-  FullHouse: 'Full House',
-  FourOfAKind: 'Four of a Kind',
-  StraightFlush: 'Straight Flush',
-}
-
 const Cards = {
   S1: 14,
   S2: 2,
@@ -71,6 +59,17 @@ const Cards = {
   D13: 13,
 }
 
+const HandRank = {
+  100: 'One Pair',
+  200: 'Two Pairs',
+  300: 'Three of a Kind',
+  400: 'Straight',
+  500: 'Flush',
+  600: 'Full House',
+  700: 'Four of a Kind',
+  800: 'Straight Flush',
+}
+
 // Check if card names for hands are valid
 function validateCard(card){
   if (Object.keys(Cards).includes(card)) {
@@ -112,17 +111,32 @@ function getRank(hand){
 
   cards = [card1,card2,card3,card4,card5];
   cards.sort(function(a, b){return a-b});
-  if(isStraight(cards)){
-    console.log("The hand is straight\n")
+  if(isStraight(cards) && isFlush(hand)){
+    return 800;
+  }
+  else if (isFourOfAKind(cards)){
+    return 700;
+  }
+  else if (isFullHouse(cards)){
+    return 600;
+  }
+  else if (isFlush(hand)){
+    return 500;
+  }
+  else if (isStraight(cards)){
+    return 400;
+  }
+  else if (isThreeOfAKind(cards)){
+    return 300;
+  }
+  else if (isTwoPairs(cards)){
+    return 200;
+  }
+  else if (isAPair(cards)){
+    return 100;
   }
   else {
-    console.log("The hand is not straight\n")
-  }
-
-  if(isFlush(hand)){
-    console.log("The hand is Flush\n")
-  } else{
-    console.log("The hand is not Flush\n")
+    return highCard(cards);
   }
 }
 
@@ -147,6 +161,115 @@ function isFlush(hand){
   }
   return true;
 }
+
+// Check if is Four of a Kind
+function isFourOfAKind(hand){
+  const counts = {};
+  
+  for (let i = 0; i < hand.length; i++) {
+    const value = hand[i];
+    counts[value] = (counts[value] || 0) + 1;
+  }
+
+  for (let value in counts) {
+    if (counts[value] === 4){
+      return true;
+    }
+  }
+  return false;
+}
+
+// Check if is Full House
+function isFullHouse(hand){
+  const counts = {};
+  triple = false;
+  pair = false;
+
+  for (let i = 0; i < hand.length; i++) {
+    const value = hand[i];
+    counts[value] = (counts[value] || 0) + 1;
+  }
+
+  for (let value in counts) {
+    if (counts[value] === 3){
+      triple = true;
+    }
+    else if (counts[value] === 2){
+      pair = true;
+    }
+  }
+  if (triple && pair){
+    return true;
+  }
+  return false;
+}
+
+
+// Check if is Three of a Kind
+function isThreeOfAKind(hand){
+  const counts = {};
+
+  for (let i = 0; i < hand.length; i++) {
+    const value = hand[i];
+    counts[value] = (counts[value] || 0) + 1;
+  }
+
+  for (let value in counts) {
+    if (counts[value] === 3){
+      return true;
+    }
+  }
+  return false;
+}
+
+// Check for Two Pairs
+function isTwoPairs(hand){
+  const counts = {};
+  pairs = 0
+
+  for (let i = 0; i < hand.length; i++) {
+    const value = hand[i];
+    counts[value] = (counts[value] || 0) + 1;
+  }
+
+  for (let value in counts) {
+    if (counts[value] === 2){
+      pairs += 1
+    }
+  }
+
+  if (pairs === 2){
+    return true;
+  }
+  return false;
+}
+
+// Check for a single pair
+function isAPair(hand){
+  const counts = {};
+
+  for (let i = 0; i < hand.length; i++) {
+    const value = hand[i];
+    counts[value] = (counts[value] || 0) + 1;
+  }
+
+  for (let value in counts) {
+    if (counts[value] === 2){
+      return true;
+    }
+  }
+  return false;
+}
+
+// If no other match, get the high card value
+function highCard(hand){
+  cardsum = 0
+  for (let i = 0; i < hand.length; i++) {
+    cardsum += hand[i];
+  }
+  return cardsum;
+}
+
 
 // Set EJS as the view engine
 app.set('view engine', 'ejs');
@@ -192,13 +315,16 @@ app.post('/json', (req, res) => {
       }
     }
     const combined = jsonData.Hand1.concat(jsonData.Hand2);
-    console.log(combined)
 
     if(checkDuplicates(combined)){
       throw new Error("There are duplicate cards being used in your deck\n")
     }
 
-    getRank(jsonData.Hand1)
+    rank1 = getRank(jsonData.Hand1)
+    rank2 = getRank(jsonData.Hand2)
+
+    console.log("Hand 1 has rank: " + rank1 + "\n")
+    console.log("Hand 2 has rank: " + rank2 + "\n")
 
     // Render the JSON data in an HTML template and send it to the client
   res.render('jsonTemplate', { jsonData });
