@@ -3,6 +3,7 @@
 In order to run this, please use:
 
 npm install express body-parser ejs
+
 node poker.js
 
 # Usage
