@@ -101,8 +101,7 @@ function checkDuplicates(hands){
   return false;
 }
 
-// Get the rank of a hand
-function getRank(hand){
+function sortHand(hand){
   card1 = Cards[hand[0]];
   card2 = Cards[hand[1]];
   card3 = Cards[hand[2]];
@@ -111,6 +110,14 @@ function getRank(hand){
 
   cards = [card1,card2,card3,card4,card5];
   cards.sort(function(a, b){return a-b});
+  return cards;
+}
+
+// Get the rank of a hand
+function getRank(hand){
+
+  cards = sortHand(hand);
+	
   if(isStraight(cards) && isFlush(hand)){
     return '800';
   }
@@ -138,6 +145,75 @@ function getRank(hand){
   else {
     return highCard(cards);
   }
+}
+
+// Tie breaker function
+function tiebreaker(hands){
+
+  console.log("Hand1 and Hand2 had a tie. Lets run them through tie breaker")
+  hand1 = hands.Hand1;
+  hand2 = hands.Hand2;
+
+  cards1 = sortHand(hand1);
+  cards2 = sortHand(hand2);
+
+  if(isStraight(cards1) || isFlush(hand1)){
+    high1 = highCard(cards1);
+    high2 = highCard(cards2);
+    console.log("Hand1 has value: " + high1 + "\nHand2 has value: " + high2 + "\n")
+    if(high1 > high2){
+      return hand1;
+    }
+    else if(high2 > high1){
+      return hand2;
+    }
+    else {
+      return hands;
+    }
+  }
+  else if(isFourOfAKind(cards1) || isFullHouse(cards1) || isThreeOfAKind(cards1) || isTwoPairs(cards1) || isAPair(cards1)){
+    high1 = sumTopCombo(cards1);
+    high2 = sumTopCombo(cards2);
+    console.log("Hand1 has value: " + high1 + "\nHand2 has value: " + high2 + "\n")
+    if(high1 > high2){
+      return hand1;
+    }
+    else if(high2 > high1){
+      return hand2;
+    }
+    else {
+      return hands;
+    }
+  }
+  else {
+      return hands;
+  }
+}
+
+// Returns the sum value of the top pair, triple or quad in a hand
+function sumTopCombo(hand){
+  const counts = {};
+  const pair = {};
+  sum = 0;
+
+  for (let i = 0; i < hand.length; i++) {
+    const value = hand[i];
+    counts[value] = (counts[value] || 0) + 1;
+  }
+
+  for (const [key, value] of Object.entries(counts)) {
+    if (value >= 2){
+      const multipliedValue = parseInt(key) * value;
+      pair[key] = multipliedValue;
+    }
+  }
+
+  for (let value in pair){
+    if(sum < pair[value]){
+      sum = pair[value];
+    }
+  }
+  return sum;
 }
 
 // Check if hand is a Straight. Expects the input array to be sorted in ascending order
@@ -265,7 +341,9 @@ function isAPair(hand){
 function highCard(hand){
   cardsum = 0
   for (let i = 0; i < hand.length; i++) {
-    cardsum += hand[i];
+    if (hand[i] > cardsum){
+      cardsum = hand[i];
+    }
   }
   return cardsum;
 }
@@ -364,16 +442,16 @@ app.post('/poker', (req, res) => {
     }
 
     if (rank1 > rank2){
-      Hand1 = jsonData.Hand1
-      res.json({ Hand1 });
+      Hand = jsonData.Hand1
+      res.json({ Hand });
     }
     else if (rank2 > rank1){
-      Hand2 = jsonData.Hand2
-      res.json({ Hand2 });
+      Hand = jsonData.Hand2
+      res.json({ Hand });
     }
     else {
-      Tied = jsonData;
-      res.json({ Tied });
+      Hand = tiebreaker(jsonData)
+      res.json({ Hand });
     }
     //res.render('jsonTemplate', { winner });
   } catch (error) {
