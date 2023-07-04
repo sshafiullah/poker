@@ -112,28 +112,28 @@ function getRank(hand){
   cards = [card1,card2,card3,card4,card5];
   cards.sort(function(a, b){return a-b});
   if(isStraight(cards) && isFlush(hand)){
-    return 800;
+    return '800';
   }
   else if (isFourOfAKind(cards)){
-    return 700;
+    return '700';
   }
   else if (isFullHouse(cards)){
-    return 600;
+    return '600';
   }
   else if (isFlush(hand)){
-    return 500;
+    return '500';
   }
   else if (isStraight(cards)){
-    return 400;
+    return '400';
   }
   else if (isThreeOfAKind(cards)){
-    return 300;
+    return '300';
   }
   else if (isTwoPairs(cards)){
-    return 200;
+    return '200';
   }
   else if (isAPair(cards)){
-    return 100;
+    return '100';
   }
   else {
     return highCard(cards);
@@ -277,8 +277,31 @@ app.set('view engine', 'ejs');
 // Parse JSON bodies
 app.use(bodyParser.json());
 
+// Instructions page
+app.get('/poker', (req, res) => {
+  const html = `
+    <html>
+      <head>
+        <title>Poker Instructions</title>
+      </head>
+      <body>
+        <h1>Instructions</h1>
+        <p>Instructions on how to use this /poker app</p>
+        <p>Post card values to the /poker path in json format. You will need to pass 2 Hands with 5 cards each. 
+	<br/>Each of the card suites is represented by the letters: H = Hearts, S = Spades, C = Clubs, D = Diamonds
+	<br/>Example: H1 represents Ace of Hearts and C13 represents King of Clubs
+	<br/>To send the request via curl:<br/> 
+	<br/>curl -X POST -H "Content-Type: application/json" -d '{"Hand1": [ "H2", "C3", "H4", "H5", "H6"],"Hand2": ["S9", "C4", "C7", "D2", "S3"]}' http://URL:8080/poker
+	</p>
+      </body>
+    </html>
+  `;
+
+  res.send(html);
+});
+
 // Route to handle JSON input
-app.post('/json', (req, res) => {
+app.post('/poker', (req, res) => {
   const jsonData = req.body;
   try {
 
@@ -320,23 +343,40 @@ app.post('/json', (req, res) => {
       throw new Error("There are duplicate cards being used in your deck\n")
     }
 
-    rank1 = getRank(jsonData.Hand1)
-    rank2 = getRank(jsonData.Hand2)
+    rank1 = getRank(jsonData.Hand1);
+    rank2 = getRank(jsonData.Hand2);
 
-    console.log("Hand 1 has rank: " + rank1 + "\n")
-    console.log("Hand 2 has rank: " + rank2 + "\n")
+    if (Object.keys(HandRank).includes(rank1)){
+      console.log("Hand 1 has rank: " + HandRank[rank1] + "\n")
+    } else {
+      console.log("Hand 1 has rank: High Card with value = " + rank1 + "\n")
+    }
 
+    if (Object.keys(HandRank).includes(rank2)){
+      console.log("Hand 2 has rank: " + HandRank[rank2] + "\n")
+    } else {
+      console.log("Hand 2 has rank: High Card with value = " + rank2 + "\n")
+    }
+
+    if (rank1 > rank2){
+      winner = jsonData.Hand1
+    }
+    else if (rank2 > rank1){
+      winner = jsonData.Hand2
+    }
+    else {
+      winner = jsonData
+    }
+    res.render('jsonTemplate', { winner });
     // Render the JSON data in an HTML template and send it to the client
-  res.render('jsonTemplate', { jsonData });
   } catch (error) {
     console.error('Error:', error.message);
     res.status(400).send(error.message);
   }
   
 
-  // Render the JSON data in an HTML template and send it to the client
-  //  res.render('jsonTemplate', { jsonData: req.body });
 });
+
 
 // Start the server
 app.listen(port, () => {
