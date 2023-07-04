@@ -277,6 +277,11 @@ app.set('view engine', 'ejs');
 // Parse JSON bodies
 app.use(bodyParser.json());
 
+// Redirect root path to poker page
+app.get('/', (req, res) => {
+  res.redirect('/poker');
+});
+
 // Instructions page
 app.get('/poker', (req, res) => {
   const html = `
@@ -359,16 +364,18 @@ app.post('/poker', (req, res) => {
     }
 
     if (rank1 > rank2){
-      winner = jsonData.Hand1
+      Hand1 = jsonData.Hand1
+      res.json({ Hand1 });
     }
     else if (rank2 > rank1){
-      winner = jsonData.Hand2
+      Hand2 = jsonData.Hand2
+      res.json({ Hand2 });
     }
     else {
-      winner = jsonData
+      Tied = jsonData;
+      res.json({ Tied });
     }
-    res.render('jsonTemplate', { winner });
-    // Render the JSON data in an HTML template and send it to the client
+    //res.render('jsonTemplate', { winner });
   } catch (error) {
     console.error('Error:', error.message);
     res.status(400).send(error.message);
