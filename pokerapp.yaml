@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pokerapp
+  labels:
+    app: pokerapp
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: pokerapp
+  template:
+    metadata:
+      labels:
+        app: pokerapp
+    spec:
+      containers:
+      - name: pokerapp
+        image: shahriarshafiullah/pokerapp:latest
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pokerapp
+spec:
+  selector:
+    app: pokerapp
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
