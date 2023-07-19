@@ -348,6 +348,14 @@ function highCard(hand){
   return cardsum;
 }
 
+// Return sum of all cards in hand
+function sumCards(hand){
+  cardsum = 0
+  for (let i = 0; i < hand.length; i++) {
+    cardsum += hand[i];
+  }
+  return cardsum;
+}
 
 // Set EJS as the view engine
 app.set('view engine', 'ejs');
